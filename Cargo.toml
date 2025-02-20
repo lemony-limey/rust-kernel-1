@@ -11,3 +11,6 @@ panic = "abort" # Disable stack unwinding on panic
 # This is the profile used by "cargo build --release"
 [profile.release]
 panic = "abort" # Disable stack unwinding on panic
+
+[dependencies]
+bootloader = "0.9"
