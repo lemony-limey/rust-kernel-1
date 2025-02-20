@@ -1,0 +1,13 @@
+[package]
+name = "stacsos-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Tom Harper <tgh1@st-andrews.ac.uk>"]
+
+# This is the profile used by "cargo build"
+[profile.dev]
+panic = "abort" # Disable stack unwinding on panic
+
+# This is the profile used by "cargo build --release"
+[profile.release]
+panic = "abort" # Disable stack unwinding on panic
