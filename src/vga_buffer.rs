@@ -121,7 +121,7 @@ pub fn print_hello_world()
     let mut writer = Writer {
         column_position: 0,
         colour_code: ColourCode::new(Colour::LightBlue, Colour::Black),
-        vga_buffer: unsafe { &mut *(0x8000 as *mut VGABuffer) },
+        vga_buffer: unsafe { &mut *(0xb8000 as *mut VGABuffer) },
     };
 
     writer.write_byte(b'H');
