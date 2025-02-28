@@ -5,8 +5,6 @@ use core::panic::PanicInfo;
 
 mod vga_buffer;
 
-static HELLO: &[u8] = b"Hello World!";
-
 /// Using "extern C" tells the compiler to use the C calling convention.
 ///
 /// This function is the entry point, as the linker looks for "_start" by default.
@@ -18,7 +16,7 @@ static HELLO: &[u8] = b"Hello World!";
 #[no_mangle] // Keep the name of this function as "_start" in the object code
 pub extern "C" fn _start() -> !
 {
-    vga_buffer::print_hello_world();
+    println!("Hello World{}", "!");
 
     loop {}
 }

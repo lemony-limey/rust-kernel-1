@@ -1,6 +1,22 @@
 // This code IS NOT MY OWN and is based off of the tutorial at the following URL:
 // https://os.phil-opp.com/vga-text-mode/
-// I have been following this tutorial throughout the duration of this project.
+// I have been following this tutorial throughout the duration of this project,
+// although there may be variations in variable names, type names and formatting.
+
+use core::fmt;
+use core::fmt::Write;
+use lazy_static::lazy_static;
+use spin::Mutex;
+use volatile::Volatile;
+
+lazy_static!
+{
+    pub static ref WRITER: Mutex<Writer> = Writer {
+        column_position: 0,
+        colour_code: ColourCode::new(Colour::Yellow, Colour::Black),
+        vga_buffer: unsafe { &mut *(0xb8000 as *mut VGABuffer) }
+    };
+}
 
 #[allow(dead_code)] // Silences compiler warnings about unused variants
 #[derive(Debug, Clone, Copy, PartialEq, Eq)] // Make it printable and comparable
@@ -55,9 +71,10 @@ const BUFFER_WIDTH: usize = 80;
 
 /// A representation of the VGA Buffer
 #[repr(transparent)]
-struct VGABuffer
-{
-    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+struct VGABuffer {
+    /// The introduction of the Volatile wrapper means that the buffer won't be optimised away,
+    /// but we must now use the write() method for writing to the buffer
+    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 /// An abstraction for safe writing to the screen (via the VGA Buffer).
@@ -70,6 +87,16 @@ pub struct Writer
     colour_code: ColourCode,
     vga_buffer: &'static mut VGABuffer, // 'static used here because VGA Buffer will live for the
                                         // lifetime of the OS
+}
+
+impl fmt::Write for Writer
+{
+    /// Implementing this trait means we can use the write!() and writeln!() macros.
+    fn write_str(&mut self, s: &str) -> fmt::Result
+    {
+        self.write_string(s);
+        Ok(())
+    }
 }
 
 impl Writer
@@ -103,17 +130,48 @@ impl Writer
                 let column = self.column_position;
 
                 let colour_code = self.colour_code;
-                self.vga_buffer.chars[row][column] = ScreenChar {
+                self.vga_buffer.chars[row][column].write(ScreenChar {
                     ascii_character: byte,
                     colour_code,
-                };
+                });
 
                 self.column_position += 1;
             }
         }
     }
 
-    fn new_line(&mut self) { /* TODO */ }
+    /// Iterate over every character in the buffer from row 1 to BUFFER_HEIGHT - 1 and write
+    /// each character to the row above.
+    /// We start at row 1 since the first row is row 0. Everything in row 0
+    /// is overwritten.
+    fn new_line(&mut self)
+    {
+        for row in 1..BUFFER_HEIGHT
+        {
+            for col in 0..BUFFER_WIDTH
+            {
+                let character = self.vga_buffer.chars[row][col].read();
+                self.vga_buffer.chars[row - 1][col].write(character);
+            }
+        }
+
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.column_position = 0;
+    }
+
+    /// Overwrite the contents of an entire row with spaces.
+    fn clear_row(&mut self, row: usize)
+    {
+        let blank = ScreenChar {
+            ascii_character: b' ',
+            colour_code: self.colour_code,
+        };
+
+        for col in 0..BUFFER_WIDTH
+        {
+            self.vga_buffer.chars[row][col].write(blank);
+        }
+    }
 }
 
 pub fn print_hello_world()
@@ -127,4 +185,25 @@ pub fn print_hello_world()
     writer.write_byte(b'H');
     writer.write_string("ello ");
     writer.write_string("World!");
+}
+
+
+#[macro_export]
+macro_rules! print
+{
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println
+{
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments)
+{
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
 }
