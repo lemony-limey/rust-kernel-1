@@ -5,6 +5,9 @@ edition = "2024"
 authors = ["Tom Harper <tgh1@st-andrews.ac.uk>"]
 
 [package.metadata.bootimage]
+run-command = [
+    "/usr/local/qemu/bin/qemu-system-x86_64"
+]
 test-args = [
     "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
     "-serial", "stdio",
