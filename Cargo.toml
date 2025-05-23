@@ -6,7 +6,9 @@ authors = ["Tom Harper <tgh1@st-andrews.ac.uk>"]
 
 [package.metadata.bootimage]
 run-command = [
-    "/usr/local/qemu/bin/qemu-system-x86_64"
+    "/usr/local/qemu/bin/qemu-system-x86_64",
+    "-drive",
+    "format=raw,file={}",
 ]
 test-args = [
     "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
