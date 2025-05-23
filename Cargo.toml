@@ -31,3 +31,7 @@ x86_64 = "0.14.2"
 [dependencies.lazy_static]
 version = "1.0"
 features = ["spin_no_std"]
+
+[[test]]
+name = "should_panic"
+harness = false # The test runner is not needed because there is only a single test case

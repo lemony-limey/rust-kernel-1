@@ -4,14 +4,11 @@
 #![no_std]  // Don't link the Rust standard library
 #![no_main] // Disable all Rust-level entry points
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(stacsos_rs::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-use core::mem::offset_of;
 use core::panic::PanicInfo;
-
-mod serial;
-mod vga_buffer;
+use stacsos_rs::println;
 
 /// Using "extern C" tells the compiler to use the C calling convention.
 ///
@@ -21,7 +18,7 @@ mod vga_buffer;
 /// but we have no caller, so even though void returns nothing, it would still attempt
 /// to hand control back to the previous caller, even though there isn't one as this
 /// is the entry point to the OS.
-#[no_mangle] // Keep the name of this function as "_start" in the object code
+#[unsafe(no_mangle)] // Keep the name of this function as "_start" in the object code
 pub extern "C" fn _start() -> !
 {
     println!("Hello World{}", "!");
@@ -45,63 +42,5 @@ fn panic(info: &PanicInfo) -> !
 #[panic_handler]
 fn panic(info: &PanicInfo) -> !
 {
-    serial_println!("[failed]\n");
-    serial_println!("Error: {}\n", info);
-    exit_qemu(QemuExitCode::Failed);
-    loop {}
-}
-
-
-#[cfg(test)]
-pub fn test_runner(tests: &[&dyn Testable])
-{
-    serial_println!("Running {} tests", tests.len());
-    for test in tests
-    {
-        test.run();
-    }
-
-    exit_qemu(QemuExitCode::Success);
-}
-
-pub trait Testable
-{
-    fn run(&self) -> ();
-}
-
-impl<T> Testable for T
-where
-    T: Fn(),
-{
-    fn run(&self)
-    {
-        serial_print!("{}...\t", core::any::type_name::<T>());
-        self();
-        serial_println!("[ok]");
-    }
-}
-
-#[test_case]
-fn trivial_assertion()
-{
-    assert_eq!(1, 1);
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
-pub enum QemuExitCode
-{
-    Success = 0x10,
-    Failed = 0x11,
-}
-
-/// isa-debug-exit uses Port-mapped I/O
-pub fn exit_qemu(exit_code: QemuExitCode)
-{
-    use x86_64::instructions::port::Port;
-
-    unsafe {
-        let mut port = Port::new(0xf4);
-        port.write(exit_code as u32);
-    }
+    stacsos_rs::test_panic_handler(info)
 }
