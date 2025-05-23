@@ -32,3 +32,7 @@ features = ["spin_no_std"]
 [[test]]
 name = "should_panic"
 harness = false # The test runner is not needed because there is only a single test case
+
+[[test]]
+name = "stack_overflow"
+harness = false
