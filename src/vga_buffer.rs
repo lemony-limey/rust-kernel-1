@@ -9,13 +9,16 @@ use lazy_static::lazy_static;
 use spin::Mutex;
 use volatile::Volatile;
 
+// Lazy static means that, unlike regular static variables which are initialised
+// at compile time, variables can be initialised on the first access.
+// We need this for the WRITER below as we cannot obtain a Mutex at compile time.
 lazy_static!
 {
-    pub static ref WRITER: Mutex<Writer> = Writer {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         colour_code: ColourCode::new(Colour::Yellow, Colour::Black),
         vga_buffer: unsafe { &mut *(0xb8000 as *mut VGABuffer) }
-    };
+    });
 }
 
 #[allow(dead_code)] // Silences compiler warnings about unused variants
@@ -206,4 +209,34 @@ pub fn _print(args: fmt::Arguments)
 {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
+}
+
+#[test_case]
+fn test_println_simple()
+{
+    println!("test_println_simple output");
+}
+
+#[test_case]
+fn test_println_many()
+{
+    for _ in 0..200
+    {
+        println!("test_println_many output");
+    }
+}
+
+#[test_case]
+fn test_println_output()
+{
+    let s = "Some test string that fits on a single line";
+    println!("{}", s);
+
+    // Iterate over every character in the VGA buffer to ensure the string "s"
+    // was actually printed.
+    for (i, c) in s.chars().enumerate()
+    {
+        let screen_char = WRITER.lock().vga_buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
+    }
 }
