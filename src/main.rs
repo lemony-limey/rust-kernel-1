@@ -44,3 +44,9 @@ fn panic(info: &PanicInfo) -> !
 {
     stacsos_rs::test_panic_handler(info)
 }
+
+#[test_case]
+fn trivial_assertion()
+{
+    assert_eq!(1, 1);
+}

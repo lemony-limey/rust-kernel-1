@@ -1,10 +1,9 @@
 // The source code from this section originates from various sections in
 // Philipp Oppermann's "Writing an OS in Rust" blog, which can be
 // found at: https://os.phil-opp.com/
-use core::fmt;
-use uart_16550::SerialPort;
-use spin::Mutex;
 use lazy_static::lazy_static;
+use spin::Mutex;
+use uart_16550::SerialPort;
 
 lazy_static!
 {
