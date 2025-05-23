@@ -1,4 +1,4 @@
-// The source code from this section originates from various sections in
+// The source code from this file originates from various sections in
 // Philipp Oppermann's "Writing an OS in Rust" blog, which can be
 // found at: https://os.phil-opp.com/
 #![no_std]  // Don't link the Rust standard library
@@ -25,7 +25,11 @@ pub extern "C" fn _start() -> !
     
     // Initialise IDT, then cause a breakpoint exception.
     stacsos_rs::init();
-    x86_64::instructions::interrupts::int3();
+    
+    // Trigger a page fault
+    unsafe {
+        *(0xdeadbeef as *mut u8) = 42;
+    }
 
     #[cfg(test)]
     test_main();

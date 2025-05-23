@@ -1,3 +1,6 @@
+// The source code from this file originates from various sections in
+// Philipp Oppermann's "Writing an OS in Rust" blog, which can be
+// found at: https://os.phil-opp.com/
 #![no_std]
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
@@ -53,6 +56,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> !
 #[unsafe(no_mangle)] // Keep the name of this function as "_start" in the object code
 pub extern "C" fn _start() -> !
 {
+    init();  // Initialise the Interrupt Descriptor Table (IDT)
     test_main();
     loop {}
 }

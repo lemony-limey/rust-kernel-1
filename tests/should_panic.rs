@@ -1,3 +1,6 @@
+// The source code from this file originates from the "Testing" section
+// of Philipp Oppermann's "Writing an OS in Rust" blog, which can be
+// found at: https://os.phil-opp.com/testing/
 #![no_std]
 #![no_main]
 

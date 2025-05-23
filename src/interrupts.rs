@@ -1,3 +1,6 @@
+// The source code from this file originates from various sections in
+// Philipp Oppermann's "Writing an OS in Rust" blog, which can be
+// found at: https://os.phil-opp.com/
 use lazy_static::lazy_static;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use crate::println;
@@ -19,4 +22,11 @@ pub fn init_idt()
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame)
 {
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
+}
+
+#[test_case]
+fn test_breakpoint_exception()
+{
+    // Invoke a breakpoint exception
+    x86_64::instructions::interrupts::int3();
 }

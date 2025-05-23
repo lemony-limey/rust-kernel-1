@@ -1,4 +1,4 @@
-// The source code from this section originates from various sections in
+// The source code from this file originates from various sections in
 // Philipp Oppermann's "Writing an OS in Rust" blog, which can be
 // found at: https://os.phil-opp.com/
 use lazy_static::lazy_static;
