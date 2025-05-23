@@ -26,10 +26,13 @@ pub extern "C" fn _start() -> !
     // Initialise IDT, then cause a breakpoint exception.
     stacsos_rs::init();
     
-    // Trigger a page fault
-    unsafe {
-        *(0xdeadbeef as *mut u8) = 42;
+    // Attempt to trigger a triple fault
+    fn stack_overflow()
+    {
+        stack_overflow();
     }
+    
+    stack_overflow();
 
     #[cfg(test)]
     test_main();
