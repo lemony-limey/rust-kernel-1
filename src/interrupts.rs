@@ -1,9 +1,9 @@
 // The source code from this file originates from various sections in
 // Philipp Oppermann's "Writing an OS in Rust" blog, which can be
 // found at: https://os.phil-opp.com/
+use crate::{gdt, println};
 use lazy_static::lazy_static;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
-use crate::{gdt, println};
 
 lazy_static!
 {
