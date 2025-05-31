@@ -4,11 +4,13 @@ use std::path::PathBuf;
 
 fn main()
 {
+    println!("cargo::rerun-if-changed=src/main.rs");
+    
     // The output directory that build scripts should use
     let output_dir = PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
     
     // Set by cargo's artifact dependency feature
-    let kernel = PathBuf::from(std::env::var_os("CARGO_BIN_FILE_KERNEL_kernel").unwrap());
+    let kernel = PathBuf::from(std::env::var_os("CARGO_BIN_FILE_KERNEL").unwrap());
     
     // Create a UEFI disk image
     let uefi_path = output_dir.join("uefi.img");

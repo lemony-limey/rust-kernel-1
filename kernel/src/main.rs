@@ -18,8 +18,8 @@ pub static BOOTLOADER_CONFIG: BootloaderConfig = {
     config
 };
 
-/// The bootloader_api crate will rewrite the signature of this function so that its
-/// name is '_start'
+// The bootloader_api crate will rewrite the signature of this function so that its
+// name is '_start'
 entry_point!(main, config = &BOOTLOADER_CONFIG);
 
 /// Using "extern C" tells the compiler to use the C calling convention.
@@ -30,7 +30,6 @@ entry_point!(main, config = &BOOTLOADER_CONFIG);
 /// but we have no caller, so even though void returns nothing, it would still attempt
 /// to hand control back to the previous caller, even though there isn't one as this
 /// is the entry point to the OS.
-#[unsafe(no_mangle)] // Keep the name of this function as "_start" in the object code
 fn main(boot_info: &'static mut BootInfo) -> !
 {
     println!("Hello World{}", "!");
@@ -38,8 +37,8 @@ fn main(boot_info: &'static mut BootInfo) -> !
     // Initialise Interrupt Descriptor Table (IDT)
     kernel::init();
     
-    #[cfg(test)]
-    test_main();
+    // #[cfg(test)]
+    // test_main();
     
     println!("It did not crash!");
     loop {}

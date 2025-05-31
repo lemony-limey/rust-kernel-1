@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 authors = ["Tom Harper <tgh1@st-andrews.ac.uk>"]
 publish = false  # This crate should never be published to crates.io
+build = "build.rs"
 
 [dependencies]
 # Used for UEFI booting in QEMU
