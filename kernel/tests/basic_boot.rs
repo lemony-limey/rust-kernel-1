@@ -4,11 +4,11 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
-#![test_runner(stacsos_rs::test_runner)]
+#![test_runner(kernel::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use stacsos_rs::println;
+use kernel::println;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> !
@@ -21,7 +21,7 @@ pub extern "C" fn _start() -> !
 #[panic_handler]
 fn panic(info: &PanicInfo) -> !
 {
-    stacsos_rs::test_panic_handler(info)
+    kernel::test_panic_handler(info)
 }
 
 #[test_case]
