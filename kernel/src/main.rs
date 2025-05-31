@@ -1,0 +1,68 @@
+// The source code from this file originates from various sections in
+// Philipp Oppermann's "Writing an OS in Rust" blog, which can be
+// found at: https://os.phil-opp.com/
+#![no_std]  // Don't link the Rust standard library
+#![no_main] // Disable all Rust-level entry points
+#![feature(custom_test_frameworks)]
+#![test_runner(kernel::test_runner)]
+#![reexport_test_harness_main = "test_main"]
+
+use bootloader_api::{entry_point, BootloaderConfig, BootInfo};
+use core::panic::PanicInfo;
+use kernel::println;
+
+/// Use a custom configuration so that it is easy to enable optional
+/// features if necessary.
+pub static BOOTLOADER_CONFIG: BootloaderConfig = {
+    let mut config = BootloaderConfig::new_default();
+    config
+};
+
+/// The bootloader_api crate will rewrite the signature of this function so that its
+/// name is '_start'
+entry_point!(main, config = &BOOTLOADER_CONFIG);
+
+/// Using "extern C" tells the compiler to use the C calling convention.
+///
+/// This function is the entry point, as the linker looks for "_start" by default.
+///
+/// We need to return the never type as opposed to void, because void still returns,
+/// but we have no caller, so even though void returns nothing, it would still attempt
+/// to hand control back to the previous caller, even though there isn't one as this
+/// is the entry point to the OS.
+#[unsafe(no_mangle)] // Keep the name of this function as "_start" in the object code
+fn main(boot_info: &'static mut BootInfo) -> !
+{
+    println!("Hello World{}", "!");
+    
+    // Initialise Interrupt Descriptor Table (IDT)
+    kernel::init();
+    
+    #[cfg(test)]
+    test_main();
+    
+    println!("It did not crash!");
+    loop {}
+}
+
+/// This function is called on panic.
+#[cfg(not(test))]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> !
+{
+    println!("{}", info);
+    loop {}
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> !
+{
+    kernel::test_panic_handler(info)
+}
+
+#[test_case]
+fn trivial_assertion()
+{
+    assert_eq!(1, 1);
+}

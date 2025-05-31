@@ -3,36 +3,16 @@ name = "stacsos-rs"
 version = "0.1.0"
 edition = "2024"
 authors = ["Tom Harper <tgh1@st-andrews.ac.uk>"]
-
-[package.metadata.bootimage]
-run-command = [
-    "/usr/local/qemu/bin/qemu-system-x86_64",
-    "-drive",
-    "format=raw,file={}",
-]
-test-args = [
-    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
-    "-serial", "stdio",
-    "-display", "none",
-]
-test-timeout = 60
-test-success-exit-code = 33  # (0x10 << 1) | 1
+publish = false  # This crate should never be published to crates.io
 
 [dependencies]
-bootloader = "=0.9"
-spin = "0.5.2"
-uart_16550 = "0.2.0"
-volatile = "0.2.6"
-x86_64 = "0.14.2"
+# Used for UEFI booting in QEMU
+ovmf-prebuilt = "0.2.3"
 
-[dependencies.lazy_static]
-version = "1.0"
-features = ["spin_no_std"]
+[build-dependencies]
+bootloader = "0.11"
+kernel = { path = "kernel", artifact = "bin", target = "x86_64-unknown-none" }
 
-[[test]]
-name = "should_panic"
-harness = false # The test runner is not needed because there is only a single test case
-
-[[test]]
-name = "stack_overflow"
-harness = false
+[workspace]
+members = ["kernel"]
+resolver = "3"
