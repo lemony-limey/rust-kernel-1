@@ -7,7 +7,6 @@ edition = "2024"
 
 [dependencies]
 bootloader_api = "0.11.10"
-# Used for UEFI boting in QEMU
 spin = "0.5.2"
 uart_16550 = "0.2.0"
 volatile = "0.2.6"
