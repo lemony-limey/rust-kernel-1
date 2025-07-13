@@ -23,22 +23,14 @@ pub extern "C" fn _start() -> !
 {
     println!("Hello World{}", "!");
     
-    // Initialise IDT, then cause a breakpoint exception.
+    // Initialise IDT
     stacsos_rs::init();
     
-    // Attempt to trigger a triple fault
-    fn stack_overflow()
-    {
-        stack_overflow();
-    }
-    
-    stack_overflow();
-
     #[cfg(test)]
     test_main();
     
     println!("It did not crash!");
-    loop {}
+    stacsos_rs::hlt_loop();
 }
 
 /// This function is called on panic.
@@ -47,7 +39,7 @@ pub extern "C" fn _start() -> !
 fn panic(info: &PanicInfo) -> !
 {
     println!("{}", info);
-    loop {}
+    stacsos_rs::hlt_loop();
 }
 
 #[cfg(test)]
