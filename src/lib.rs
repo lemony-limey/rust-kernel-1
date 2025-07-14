@@ -8,12 +8,28 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-use core::panic::PanicInfo;
-
 pub mod interrupts;
 pub mod gdt;
+pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
+
+#[cfg(test)]
+use bootloader::{BootInfo, entry_point};
+
+use core::panic::PanicInfo;
+
+#[cfg(test)]
+entry_point!(test_kernel_main);
+
+/// Entry point for 'cargo test'
+#[cfg(test)]
+fn test_kernel_main(_boot_info: &'static BootInfo) -> !
+{
+    init();
+    test_main();
+    hlt_loop();
+}
 
 pub trait Testable
 {
@@ -48,17 +64,6 @@ pub fn test_panic_handler(info: &PanicInfo) -> !
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    hlt_loop();
-}
-
-
-/// Entry point for 'cargo test'
-#[cfg(test)]
-#[unsafe(no_mangle)] // Keep the name of this function as "_start" in the object code
-pub extern "C" fn _start() -> !
-{
-    init();  // Initialise the Interrupt Descriptor Table (IDT)
-    test_main();
     hlt_loop();
 }
 
