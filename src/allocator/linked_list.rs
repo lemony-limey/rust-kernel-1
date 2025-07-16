@@ -146,6 +146,8 @@ impl LinkedListAllocator
 
         (size, layout.align())
     }
+
+    // TODO: Must support merging deallocated blocks
 }
 
 unsafe impl GlobalAlloc for Locked<LinkedListAllocator>

@@ -7,6 +7,7 @@ pub mod slab;
 use alloc::alloc::{GlobalAlloc, Layout};
 use bump::BumpAllocator;
 use core::ptr::null_mut;
+use fixed_size_block::FixedSizeBlockAllocator;
 use linked_list::LinkedListAllocator;
 use x86_64::{
     structures::paging::{
@@ -21,7 +22,7 @@ use x86_64::{
 };
 
 #[global_allocator]
-static ALLOCATOR: Locked<LinkedListAllocator> = Locked::new(LinkedListAllocator::new());
+static ALLOCATOR: Locked<FixedSizeBlockAllocator> = Locked::new(FixedSizeBlockAllocator::new());
 
 pub const HEAP_START: usize = 0x4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
