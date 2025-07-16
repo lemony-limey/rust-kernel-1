@@ -1,8 +1,13 @@
+use super::{align_up, Locked};
+
+use alloc::alloc::{GlobalAlloc, Layout};
+use core::ptr;
+
 pub struct BumpAllocator
 {
-    heap_start: usize,   // Heap lower bound
-    heap_end: usize,     // Heap upper bound
-    next: usize,         // Points to first unused byte of the heap
+    heap_start:  usize,  // Heap lower bound
+    heap_end:    usize,  // Heap upper bound
+    next:        usize,  // Points to first unused byte in the heap
     allocations: usize,  // Counter for active allocations
 }
 
@@ -29,5 +34,45 @@ impl BumpAllocator
         self.heap_start = heap_start;
         self.heap_end = heap_start + heap_size;
         self.next = heap_start;
+    }
+}
+
+unsafe impl GlobalAlloc for Locked<BumpAllocator>
+{
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8
+    {
+        // Get a mutable reference to self
+        let mut bump = self.lock();
+
+        let alloc_start = align_up(bump.next, layout.align());
+        let alloc_end = match alloc_start.checked_add(layout.size()) {
+            Some(end) => end,
+            None => return ptr::null_mut(), // Indicate allocation failure
+        };
+
+        // Ensure entire allocation is within the heap (bounds check)
+        if alloc_end > bump.heap_end
+        {
+            // Out of memory
+            ptr::null_mut()
+        }
+        else
+        {
+            bump.next = alloc_end;
+            bump.allocations += 1;
+            alloc_start as *mut u8
+        }
+    }
+
+    unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout)
+    {
+        // Get a mutable reference to self
+        let mut bump = self.lock();
+
+        bump.allocations -= 1;
+        if bump.allocations == 0
+        {
+            bump.next = bump.heap_start;
+        }
     }
 }

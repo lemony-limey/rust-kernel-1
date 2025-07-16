@@ -20,7 +20,6 @@ test-success-exit-code = 33  # (0x10 << 1) | 1
 
 [dependencies]
 bootloader = { version = "=0.9", features = ["map_physical_memory"] }
-linked_list_allocator = "0.9.0"
 pc-keyboard = "0.7.0"
 pic8259 = "0.10.1"
 spin = "0.5.2"
