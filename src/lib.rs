@@ -15,6 +15,7 @@ pub mod interrupts;
 pub mod gdt;
 pub mod memory;
 pub mod serial;
+pub mod task;
 pub mod vga_buffer;
 
 #[cfg(test)]

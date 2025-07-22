@@ -17,8 +17,16 @@ use alloc::{
 };
 use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
-use stacsos_rs::println;
+use stacsos_rs::{
+    task::{
+        Task,
+        simple_executor::SimpleExecutor,
+    },
+    println,
+};
 
+/// Re-writes the signature of kernel_main so that it has the name
+/// _start in the asm output.
 entry_point!(kernel_main);
 
 fn kernel_main(boot_info: &'static BootInfo) -> !
@@ -38,28 +46,16 @@ fn kernel_main(boot_info: &'static BootInfo) -> !
         BootInfoFrameAllocator::init(&boot_info.memory_map)
     };
 
+    
     allocator::init_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialisation failed");
 
-    // Allocate a number on the heap
-    let heap_value = Box::new(41);
-    println!("heap_value at {:p}", heap_value);
 
-    // Create a dynamically sized vector
-    let mut vec = Vec::new();
-    for i in 0..500
-    {
-        vec.push(i);
-    }
-    println!("vec at {:p}", vec.as_slice());
+    // Initialise the executor, enabling asynchronous tasks to run
+    let mut executor = SimpleExecutor::new();
+    executor.spawn(Task::new(example_task()));
+    executor.run();
 
-    // Create a reference counted vector. It will be freed when the reference
-    // count reaches 0.
-    let reference_counted_vec = Rc::new(vec![1, 2, 3]);
-    let cloned_reference = reference_counted_vec.clone();
-    println!("current reference count is {}", Rc::strong_count(&cloned_reference));
-    core::mem::drop(reference_counted_vec);
-    println!("reference count is {} now", Rc::strong_count(&cloned_reference));
 
     #[cfg(test)]
     test_main();
@@ -88,4 +84,15 @@ fn panic(info: &PanicInfo) -> !
 fn trivial_assertion()
 {
     assert_eq!(1, 1);
+}
+
+async fn async_number() -> u32
+{
+    42
+}
+
+async fn example_task() 
+{
+    let number = async_number().await;
+    println!("async number: {}", number);
 }
