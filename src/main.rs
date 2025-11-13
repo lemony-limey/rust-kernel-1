@@ -61,6 +61,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> !
     core::mem::drop(reference_counted_vec);
     println!("reference count is {} now", Rc::strong_count(&cloned_reference));
 
+    // This is ok because of "reexport_test_harness_main"
     #[cfg(test)]
     test_main();
     

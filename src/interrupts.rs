@@ -1,11 +1,12 @@
 // The source code from this file originates from various sections in
 // Philipp Oppermann's "Writing an OS in Rust" blog, which can be
 // found at: https://os.phil-opp.com/
-use crate::{gdt, print, println};
+use crate::{gdt, hlt_loop, print, println};
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use spin;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
+
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -58,7 +59,7 @@ lazy_static!
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(
-    interrupt_stack_frame: InterruptStackFrame
+    _interrupt_stack_frame: InterruptStackFrame
 )
 {
     print!(".");
@@ -125,9 +126,6 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
             .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
     }
 }
-
-use x86_64::structures::idt::PageFaultErrorCode;
-use crate::hlt_loop;
 
 extern "x86-interrupt" fn page_fault_handler(
     stack_frame: InterruptStackFrame,
