@@ -11,16 +11,16 @@
 extern crate alloc;
 
 pub mod allocator;
-pub(crate) mod interrupts;
-pub(crate) mod gdt;
+pub mod interrupts;
+pub mod gdt;
 pub mod memory;
-pub(crate) mod serial;
-pub(crate) mod user
+pub mod serial;
+pub mod user
 {
-    pub(crate) mod shell;
+    pub mod shell;
 }
-pub(crate) mod vga_buffer;
-pub(crate) mod console;
+pub mod vga_buffer;
+pub mod console;
 
 #[cfg(test)]
 use bootloader::{BootInfo, entry_point};
